@@ -1,0 +1,672 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "landofile-spec.json",
+  "title": "Landofile",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the Lando project.",
+      "examples": [
+        "mysite",
+        "example-web-app",
+        "867-5309"
+      ],
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "minLength": 1
+    },
+    "recipe": {
+      "type": "string",
+      "description": "The recipe used for the Lando project.",
+      "examples": [
+        "lamp",
+        "drupal10",
+        "wordpress",
+        "mean",
+        "pantheon",
+        "laravel"
+      ]
+    },
+    "config": {
+      "type": "object",
+      "description": "Configuration options for the recipe specified in the recipe key.",
+      "properties": {
+        "via": {
+          "type": "string",
+          "description": "The server type for the project.",
+          "default": "apache",
+          "examples": [
+            "apache",
+            "nginx"
+          ]
+        },
+        "webroot": {
+          "type": "string",
+          "description": "The webroot directory relative to the app root.",
+          "default": ".",
+          "examples": [
+            "web",
+            "docroot",
+            "drupal/web"
+          ]
+        },
+        "php": {
+          "type": "string",
+          "description": "The PHP version for the project.",
+          "examples": [
+            "7.3",
+            "8.2"
+          ]
+        },
+        "database": {
+          "type": "string",
+          "description": "The database type and version for the project.",
+          "examples": [
+            "mariadb:10.2"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "env_file": {
+      "type": "array",
+      "description": "List of .env files to load into all services.",
+      "items": {
+        "type": "string"
+      },
+      "pattern": "^(?!\\.\\.)[^/].*[^/]$",
+      "examples": [
+        [
+          ".env"
+        ],
+        [
+          ".lando/mysql_vars.env",
+          ".lando/drupal_vars.env"
+        ],
+        [
+          "drupal/.env",
+          "frontend/.env"
+        ]
+      ]
+    },
+    "excludes": {
+      "type": "array",
+      "description": "List of directories to exclude from syncing to the Lando services.",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "vendor",
+          "web/modules/contrib",
+          "!web/modules/contrib/webform"
+        ],
+        [
+          "node_modules"
+        ]
+      ]
+    },
+    "services": {
+      "type": "object",
+      "description": "Lando service definitions.",
+      "patternProperties": {
+        "^[a-zA-Z0-9._-]+$": {
+          "$ref": "#/$defs/lando/service"
+        }
+      },
+      "additionalProperties": false
+    },
+    "proxy": {
+      "$ref": "#/$defs/proxy"
+    },
+    "tooling": {
+      "type": "object",
+      "description": "Tooling definitions for the Lando project.",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "description": "The tooling command to be added to the Lando CLI.",
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Prevent the tool from being loaded.",
+              "enum": [
+                "disabled"
+              ],
+              "default": "disabled"
+            },
+            {
+              "$ref": "#/$defs/lando/tool"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "object",
+      "description": "Attach commands to Lando events hooks.",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "array",
+          "description": "List of commands to run on the event.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "compose": {
+      "type": "array",
+      "description": "List of docker-compose files to include.",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "compose.yml"
+        ]
+      ]
+    },
+    "plugins": {
+      "type": "object",
+      "description": "Lando plugins to load.",
+      "patternProperties": {
+        "^(@[a-z0-9_-]+/)?[a-z0-9_-]+$": {
+          "type": "string",
+          "description": "Path to the plugin.",
+          "examples": [
+            "../..",
+            "../../plugins/scanner"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "dependencies": {
+    "config": {
+      "$comment": "config requires a recipe",
+      "required": [
+        "recipe"
+      ]
+    }
+  },
+  "$defs": {
+    "lando": {
+      "service": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of service.",
+            "examples": [
+              "node",
+              "php:7.4",
+              "nginx",
+              "apache",
+              "mysql:5.7",
+              "compose",
+              "lando"
+            ],
+            "pattern": "^[a-zA-Z0-9._-]+(:[a-zA-Z0-9._-]+)?$"
+          },
+          "api": {
+            "type": "number",
+            "description": "The Lando service API version used to define the service.",
+            "default": 3,
+            "enum": [
+              3,
+              4
+            ]
+          },
+          "build": {
+            "type": "array",
+            "description": "Commands to run while the service is being built.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              [
+                "npm install"
+              ]
+            ]
+          },
+          "build_as_root": {
+            "type": "array",
+            "description": "Commands to run as the root user while the service is being built.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              [
+                "apt-get update",
+                "apt-get install -y curl"
+              ]
+            ]
+          },
+          "run": {
+            "type": "array",
+            "description": "Commands to run after the service is started.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              [
+                "drush config:import -y",
+                "drush cache:rebuild"
+              ]
+            ]
+          },
+          "run_as_root": {
+            "type": "array",
+            "description": "Commands to run as the root user after the service is started.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              [
+                "echo '127.0.0.1 mysite.lndo.site' >> /etc/hosts"
+              ]
+            ]
+          },
+          "ssl": {
+            "type": [
+              "boolean",
+              "number"
+            ],
+            "description": "SSL configuration for the service.",
+            "examples": [
+              3000,
+              false
+            ]
+          },
+          "sslExpose": {
+            "type": "boolean",
+            "description": "Expose SSL for the service."
+          },
+          "scanner": {
+            "type": [
+              "boolean",
+              "object"
+            ],
+            "description": "Scanner configuration for the service.",
+            "examples": [
+              false,
+              {
+                "timeout": 1000,
+                "retry": 10,
+                "path": "/another.html",
+                "okCodes": [
+                  404
+                ]
+              }
+            ],
+            "properties": {
+              "timeout": {
+                "type": "number",
+                "description": "Scanner timeout in milliseconds."
+              },
+              "retry": {
+                "type": "number",
+                "description": "Number of retries for the scanner."
+              },
+              "path": {
+                "type": "string",
+                "description": "Path to check for the scanner."
+              },
+              "okCodes": {
+                "type": "array",
+                "description": "HTTP codes to consider as OK.",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "maxRedirects": {
+                "type": "number",
+                "description": "Maximum number of redirects to follow."
+              }
+            },
+            "additionalProperties": false
+          },
+          "services": {
+            "$ref": "#/$defs/compose/service"
+          },
+          "overrides": {
+            "$ref": "#/$defs/compose/service"
+          }
+        },
+        "additionalProperties": false
+      },
+      "tool": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "description": "The service to run the tool in.",
+            "default": "appserver",
+            "examples": [
+              "appserver",
+              "database"
+            ]
+          },
+          "cmd": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "The command(s) to run for the tool.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              "npm install",
+              [
+                "npm install",
+                "npm run build"
+              ]
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "Description to help users understand the function of your tooling command."
+          },
+          "dir": {
+            "type": "string",
+            "description": "The working directory to execute the command in.",
+            "examples": [
+              "docroot",
+              "/app"
+            ]
+          },
+          "user": {
+            "type": "string",
+            "description": "The user to run the tool as.",
+            "default": "www-data",
+            "examples": [
+              "root"
+            ]
+          },
+          "env": {
+            "type": "object",
+            "description": "Environment variables to set before running the command.",
+            "patternProperties": {
+              "^[a-zA-Z0-9_-]+$": {
+                "type": "string"
+              }
+            },
+            "examples": [
+              {
+                "COLUMNS": "80"
+              }
+            ]
+          },
+          "level": {
+            "type": "string",
+            "description": "Set to `app` to enable interactive options for the command.",
+            "enum": [
+              "app"
+            ]
+          },
+          "options": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "object",
+                "properties": {
+                  "passthrough": {
+                    "type": "boolean",
+                    "description": "TODO",
+                    "default": true
+                  },
+                  "alias": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "describe": {
+                    "type": "string",
+                    "description": "Description of the environment option."
+                  },
+                  "interactive": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "choices": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "service"
+        ],
+        "dependencies": {
+          "options": {
+            "required": [
+              "level"
+            ]
+          }
+        }
+      }
+    },
+    "proxy": {
+      "type": "object",
+      "description": "Proxy configuration for Lando services",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "array",
+          "description": "List of proxy targets.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Hostname for the proxy target with optional port and pathname specifications.",
+                "pattern": "^((\\*\\.|([a-zA-Z0-9-]+\\.)*)([a-zA-Z0-9-]+)(:[0-9]+)?(/[a-zA-Z0-9_/-]*)?)$",
+                "examples": [
+                  "myapp.lndo.site",
+                  "myapp.lndo.site:8888",
+                  "*.mysite.lndo.site",
+                  "name.lndo.site/api",
+                  "*.lndo.site:8080/everything/for-real"
+                ]
+              },
+              {
+                "type": "object",
+                "description": "Advanced proxy configuration utilizing Traefik middlewares.",
+                "properties": {
+                  "hostname": {
+                    "type": "string",
+                    "pattern": "^(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}|(\\*\\.)?([a-zA-Z0-9-]+\\.)*[a-zA-Z0-9-]+)$",
+                    "examples": [
+                      "object-format.lndo.site"
+                    ]
+                  },
+                  "port": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "examples": [
+                      80
+                    ]
+                  },
+                  "pathname": {
+                    "type": "string",
+                    "examples": [
+                      "/"
+                    ]
+                  },
+                  "middlewares": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "examples": [
+                            "test",
+                            "test-secured"
+                          ]
+                        },
+                        "key": {
+                          "type": "string",
+                          "examples": [
+                            "headers.customrequestheaders.X-Lando-Test"
+                          ]
+                        },
+                        "value": {
+                          "type": "string",
+                          "examples": [
+                            "on"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "key",
+                        "value"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "hostname",
+                  "port",
+                  "pathname"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "compose": {
+      "service": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Docker image for the service.",
+            "examples": [
+              "php:8.2-apache",
+              "bitnami/mariadb:10.2",
+              "node:14",
+              "google/cloud-sdk:latest"
+            ],
+            "additionalProperties": false
+          },
+          "command": {
+            "$comment": "",
+            "type": "string",
+            "description": "Overrides the default command declared by the container image.",
+            "examples": [
+              "docker-entrypoint.sh mysqld",
+              "docker-entrypoint.sh sleep infinity",
+              "docker-php-entrypoint apache2-foreground"
+            ]
+          },
+          "environment": {
+            "description": "Environment variables for the service.",
+            "oneOf": [
+              {
+                "type": "object",
+                "patternProperties": {
+                  ".+": {
+                    "type": ["string", "number", "boolean", "null"]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+            ],
+            "examples": [
+              [
+                "DB_STORAGE_TYPE=mongo",
+                "CONNECTION_STRING=mongodb://database:27017/mean"
+              ],
+              {
+                "GO_VERSION": "1.16.15",
+                "GOPATH": "/go"
+              }
+            ]
+          },
+          "volumes": {
+            "type": "array",
+            "description": "Volumes for the service.",
+            "items": {
+              "type": [
+                "string",
+                "object"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "Type of volume.",
+                  "examples": [
+                    "volume"
+                  ]
+                },
+                "source": {
+                  "type": "string",
+                  "description": "Source of the volume."
+                },
+                "target": {
+                  "type": "string",
+                  "description": "Target of the volume."
+                }
+              },
+              "additionalProperties": false
+            },
+            "examples": [
+              [
+                "type: volume",
+                "source: go_path",
+                "target: /go"
+              ],
+              [
+                "./:/app",
+                "./default.conf.template:/etc/nginx/templates/default.conf.template"
+              ]
+            ]
+          },
+          "ports": {
+            "type": "array",
+            "description": "Ports for the service.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              [
+                "80",
+                "9222:9222"
+              ],
+              [
+                "8080",
+                "2345:2345"
+              ]
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}
