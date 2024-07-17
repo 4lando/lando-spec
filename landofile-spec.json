@@ -3,10 +3,11 @@
   "$id": "landofile-spec.json",
   "title": "Landofile",
   "type": "object",
+  "description": "The configuration file for Lando apps.",
   "properties": {
     "name": {
       "type": "string",
-      "description": "The name of the Lando project.",
+      "description": "The name of the Lando app.",
       "examples": [
         "mysite",
         "example-web-app",
@@ -37,7 +38,8 @@
           "default": "apache",
           "examples": [
             "apache",
-            "nginx"
+            "nginx",
+            "nginx:1.25"
           ]
         },
         "webroot": {
@@ -62,7 +64,8 @@
           "type": "string",
           "description": "The database type and version for the project.",
           "examples": [
-            "mariadb:10.2"
+            "mariadb:10.2",
+            "mysql:8.0"
           ]
         }
       },
@@ -114,6 +117,19 @@
           "$ref": "#/$defs/lando/service"
         }
       },
+      "examples": [
+        {
+          "appserver": {
+            "type": "php:8.2",
+            "build": [
+              "composer install"
+            ]
+          },
+          "database": {
+            "type": "mysql:8.0"
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "proxy": {
@@ -140,6 +156,17 @@
           ]
         }
       },
+      "examples": [
+        {
+          "install": {
+            "description": "Install dependencies for the project.",
+            "cmd": [
+              "appserver: composer install",
+              "node: npm install"
+            ]
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "events": {
@@ -556,7 +583,15 @@
             ]
           }
         }
-      }
+      },
+      "examples": [
+        {
+          "appserver": "myapp.lndo.site"
+        },
+        {
+          "node": "myapp.lndo.site:5173"
+        }
+      ]
     },
     "compose": {
       "service": {
