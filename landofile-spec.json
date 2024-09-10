@@ -18,7 +18,7 @@
     },
     "recipe": {
       "type": "string",
-      "description": "The recipe used for the Lando project.",
+      "description": "The recipe used for the Lando app.",
       "examples": [
         "lamp",
         "drupal10",
@@ -34,8 +34,9 @@
       "properties": {
         "via": {
           "type": "string",
-          "description": "The server type for the project.",
+          "description": "The server type for the app.",
           "default": "apache",
+          "pattern": "^(apache|nginx|cli)(?::[0-9]+(?:\\.[0-9]+)*)?$",
           "examples": [
             "apache",
             "nginx",
@@ -54,7 +55,7 @@
         },
         "php": {
           "type": "string",
-          "description": "The PHP version for the project.",
+          "description": "The PHP version for the app.",
           "examples": [
             "7.3",
             "8.2"
@@ -62,11 +63,14 @@
         },
         "database": {
           "type": "string",
-          "description": "The database type and version for the project.",
+          "description": "The database type and version for the app.",
           "examples": [
             "mariadb:10.2",
             "mysql:8.0"
           ]
+        },
+        "xdebug": {
+          "$ref": "#/$defs/plugins/php/config/xdebug"
         }
       },
       "additionalProperties": true
@@ -362,6 +366,9 @@
           },
           "overrides": {
             "$ref": "#/$defs/compose/service"
+          },
+          "xdebug": {
+            "$ref": "#/$defs/plugins/php/config/xdebug"
           }
         },
         "additionalProperties": false
@@ -625,12 +632,23 @@
                 "type": "object",
                 "patternProperties": {
                   ".+": {
-                    "type": ["string", "number", "boolean", "null"]
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "null"
+                    ]
                   }
                 },
                 "additionalProperties": false
               },
-              {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              }
             ],
             "examples": [
               [
@@ -701,6 +719,28 @@
           }
         },
         "additionalProperties": true
+      }
+    },
+    "plugins": {
+      "php": {
+        "config": {
+          "xdebug": {
+            "description": "Xdebug configuration for the app. This can be a boolean or a string of modes to enable.",
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "default": false,
+            "examples": [
+              "true",
+              "debug,develop"
+            ]
+          }
+        }
       }
     }
   }
