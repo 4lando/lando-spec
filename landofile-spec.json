@@ -129,8 +129,14 @@
               "composer install"
             ]
           },
-          "database": {
-            "type": "mysql:8.0"
+          "node": {
+            "type": "node:20",
+            "build": [
+              "npm install"
+            ],
+            "command": "vite --host 0.0.0.0",
+            "ports": ["5173"],
+            "ssl": true
           }
         }
       ],
@@ -369,6 +375,17 @@
           },
           "xdebug": {
             "$ref": "#/$defs/plugins/php/config/xdebug"
+          },
+          "command": {
+            "type": "string",
+            "description": "Command to run when starting the service."
+          },
+          "ports": {
+            "type": "array",
+            "description": "Ports to expose for the service.",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false
