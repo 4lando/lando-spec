@@ -135,7 +135,7 @@
               "npm install"
             ],
             "command": "vite --host 0.0.0.0",
-            "ports": ["5173"],
+            "port": "5173",
             "ssl": true
           }
         }
@@ -380,11 +380,45 @@
             "type": "string",
             "description": "Command to run when starting the service."
           },
-          "ports": {
-            "type": "array",
-            "description": "Ports to expose for the service.",
-            "items": {
-              "type": "string"
+          "port": {
+            "type": ["string", "number", "boolean"],
+            "description": "Port to expose for the service. Set to false to disable port mapping. Values less than 1024 will cause the service to run as root.",
+            "examples": [
+              "3000",
+              80,
+              false
+            ]
+          },
+          "dependencies": {
+            "command": {
+              "properties": {
+                "type": {
+                  "pattern": "^node(:[a-zA-Z0-9._-]+)?$"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            },
+            "port": {
+              "properties": {
+                "type": {
+                  "pattern": "^node(:[a-zA-Z0-9._-]+)?$"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            },
+            "xdebug": {
+              "properties": {
+                "type": {
+                  "pattern": "^php(:[a-zA-Z0-9._-]+)?$"
+                }
+              },
+              "required": [
+                "type"
+              ]
             }
           }
         },
