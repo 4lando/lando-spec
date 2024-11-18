@@ -79,9 +79,9 @@
       "type": "array",
       "description": "List of .env files to load into all services.",
       "items": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^(?!\\.\\.)[^/].*[^/]$"
       },
-      "pattern": "^(?!\\.\\.)[^/].*[^/]$",
       "examples": [
         [
           ".env"
@@ -388,29 +388,42 @@
               80,
               false
             ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "anyOf": [
+                {
+                  "required": [
+                    "command"
+                  ]
+                },
+                {
+                  "required": [
+                    "port"
+                  ]
+                }
+              ]
+            },
+            "then": {
+              "properties": {
+                "type": {
+                  "pattern": "^node(:[a-zA-Z0-9._-]+)?$"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            }
           },
-          "dependencies": {
-            "command": {
-              "properties": {
-                "type": {
-                  "pattern": "^node(:[a-zA-Z0-9._-]+)?$"
-                }
-              },
+          {
+            "if": {
               "required": [
-                "type"
+                "xdebug"
               ]
             },
-            "port": {
-              "properties": {
-                "type": {
-                  "pattern": "^node(:[a-zA-Z0-9._-]+)?$"
-                }
-              },
-              "required": [
-                "type"
-              ]
-            },
-            "xdebug": {
+            "then": {
               "properties": {
                 "type": {
                   "pattern": "^php(:[a-zA-Z0-9._-]+)?$"
@@ -421,7 +434,7 @@
               ]
             }
           }
-        },
+        ],
         "additionalProperties": false
       },
       "tool": {
