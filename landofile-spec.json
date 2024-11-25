@@ -309,9 +309,9 @@
             ]
           },
           "ssl": {
-            "type": [
-              "boolean",
-              "number"
+            "oneOf": [
+              { "type": "boolean" },
+              { "type": "number" }
             ],
             "description": "SSL configuration for the service.",
             "examples": [
@@ -324,48 +324,42 @@
             "description": "Expose SSL for the service."
           },
           "scanner": {
-            "type": [
-              "boolean",
-              "object"
-            ],
-            "description": "Scanner configuration for the service.",
-            "examples": [
-              false,
+            "oneOf": [
               {
-                "timeout": 1000,
-                "retry": 10,
-                "path": "/another.html",
-                "okCodes": [
-                  404
-                ]
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "description": "Scanner configuration for the service.",
+                "properties": {
+                  "timeout": {
+                    "type": "number",
+                    "description": "Scanner timeout in milliseconds."
+                  },
+                  "retry": {
+                    "type": "number",
+                    "description": "Number of retries for the scanner."
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "Path to check for the scanner."
+                  },
+                  "okCodes": {
+                    "type": "array",
+                    "description": "HTTP codes to consider as OK.",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "maxRedirects": {
+                    "type": "number",
+                    "description": "Maximum number of redirects to follow."
+                  }
+                },
+                "additionalProperties": false
               }
             ],
-            "properties": {
-              "timeout": {
-                "type": "number",
-                "description": "Scanner timeout in milliseconds."
-              },
-              "retry": {
-                "type": "number",
-                "description": "Number of retries for the scanner."
-              },
-              "path": {
-                "type": "string",
-                "description": "Path to check for the scanner."
-              },
-              "okCodes": {
-                "type": "array",
-                "description": "HTTP codes to consider as OK.",
-                "items": {
-                  "type": "number"
-                }
-              },
-              "maxRedirects": {
-                "type": "number",
-                "description": "Maximum number of redirects to follow."
-              }
-            },
-            "additionalProperties": false
+            "description": "Scanner configuration for the service."
           },
           "services": {
             "$ref": "#/$defs/compose/service"
@@ -409,6 +403,7 @@
             "then": {
               "properties": {
                 "type": {
+                  "type": "string",
                   "pattern": "^node(:[a-zA-Z0-9._-]+)?$"
                 }
               },
@@ -426,6 +421,7 @@
             "then": {
               "properties": {
                 "type": {
+                  "type": "string",
                   "pattern": "^php(:[a-zA-Z0-9._-]+)?$"
                 }
               },
