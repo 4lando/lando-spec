@@ -1,6 +1,6 @@
 const Ajv = require('ajv');
 const schema = require('../landofile-spec.json');
-const ajv = new Ajv({ allErrors: true });
+const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
 
 describe('Landofile Schema Validation', () => {
   const validate = ajv.compile(schema);

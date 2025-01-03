@@ -234,6 +234,7 @@
     "lando": {
       "service": {
         "type": "object",
+        "description": "The name of the service.",
         "properties": {
           "type": {
             "type": "string",
@@ -310,8 +311,12 @@
           },
           "ssl": {
             "oneOf": [
-              { "type": "boolean" },
-              { "type": "number" }
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              }
             ],
             "description": "SSL configuration for the service.",
             "examples": [
@@ -375,8 +380,18 @@
             "description": "Command to run when starting the service."
           },
           "port": {
-            "type": ["string", "number", "boolean"],
             "description": "Port to expose for the service. Set to false to disable port mapping. Values less than 1024 will cause the service to run as root.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
             "examples": [
               "3000",
               80,
@@ -446,9 +461,16 @@
             ]
           },
           "cmd": {
-            "type": [
-              "string",
-              "array"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             ],
             "description": "The command(s) to run for the tool.",
             "items": {
@@ -692,11 +714,19 @@
                 "type": "object",
                 "patternProperties": {
                   ".+": {
-                    "type": [
-                      "string",
-                      "number",
-                      "boolean",
-                      "null"
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   }
                 },
@@ -725,28 +755,28 @@
             "type": "array",
             "description": "Volumes for the service.",
             "items": {
-              "type": [
-                "string",
-                "object"
-              ],
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "description": "Type of volume.",
-                  "examples": [
-                    "volume"
-                  ]
+              "oneOf": [
+                {
+                  "type": "string"
                 },
-                "source": {
-                  "type": "string",
-                  "description": "Source of the volume."
-                },
-                "target": {
-                  "type": "string",
-                  "description": "Target of the volume."
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "Type of volume."
+                    },
+                    "source": {
+                      "type": "string",
+                      "description": "Source of the volume."
+                    },
+                    "target": {
+                      "type": "string",
+                      "description": "Target of the volume."
+                    }
+                  }
                 }
-              },
-              "additionalProperties": false
+              ]
             },
             "examples": [
               [
@@ -786,6 +816,7 @@
         "config": {
           "xdebug": {
             "description": "Xdebug configuration for the app. This can be a boolean or a string of modes to enable.",
+            "type": ["boolean", "string"],
             "oneOf": [
               {
                 "type": "boolean"
