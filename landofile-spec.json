@@ -372,6 +372,9 @@
           "overrides": {
             "$ref": "#/$defs/compose/service"
           },
+          "hogfrom": {
+            "$ref": "#/$defs/plugins/mailhog/config/hogfrom"
+          },
           "xdebug": {
             "$ref": "#/$defs/plugins/php/config/xdebug"
           },
@@ -438,6 +441,24 @@
                 "type": {
                   "type": "string",
                   "pattern": "^php(:[a-zA-Z0-9._-]+)?$"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "hogfrom"
+              ]
+            },
+            "then": {
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "pattern": "^mailhog(:[a-zA-Z0-9._-]+)?$"
                 }
               },
               "required": [
@@ -812,6 +833,20 @@
       }
     },
     "plugins": {
+      "mailhog": {
+        "config": {
+          "hogfrom": {
+            "type": "array",
+            "description": "List of service names to capture mail from. The mhsendmail binary will be installed in each listed service.",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              ["appserver"]
+            ]
+          }
+        }
+      },
       "php": {
         "config": {
           "xdebug": {
