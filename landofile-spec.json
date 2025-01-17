@@ -7,7 +7,7 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "The name of the Lando app.",
+      "description": "The name of the Lando app. Must start with a lowercase letter or number and can only contain lowercase letters, numbers, hyphens and underscores. This name will be used as the project name in Docker Compose and should be unique across all Lando apps on your system.",
       "examples": [
         "mysite",
         "example-web-app",
@@ -18,7 +18,7 @@
     },
     "recipe": {
       "type": "string",
-      "description": "The recipe used for the Lando app.",
+      "description": "The recipe used for the Lando app. Recipes are pre-configured combinations of services and tooling that provide a complete development environment for common use cases. For example, the 'lamp' recipe provides Apache, MySQL and PHP, while 'drupal10' provides everything needed for Drupal 10 development including Drush.",
       "examples": [
         "lamp",
         "drupal10",
@@ -30,11 +30,11 @@
     },
     "config": {
       "type": "object",
-      "description": "Configuration options for the recipe specified in the recipe key.",
+      "description": "Configuration options for specified recipe.",
       "properties": {
         "via": {
           "type": "string",
-          "description": "The server type for the app.",
+          "description": "The web server type and version for serving the application. Can be apache, nginx, or cli. Optionally specify a version number after a colon (e.g. nginx:1.25). Apache is the default if not specified. The cli option runs PHP directly without a web server.",
           "default": "apache",
           "pattern": "^(apache|nginx|cli)(?::[0-9]+(?:\\.[0-9]+)*)?$",
           "examples": [
@@ -45,7 +45,7 @@
         },
         "webroot": {
           "type": "string",
-          "description": "The webroot directory relative to the app root.",
+          "description": "The directory containing the web-accessible files, relative to the app root. This is where your index.php or other entry point files should be located. For Drupal sites this is often 'web' or 'docroot', for WordPress it's typically '.', and for other frameworks it varies. The path can include subdirectories using forward slashes. All web requests will be served from this directory.",
           "default": ".",
           "examples": [
             "web",
@@ -55,7 +55,7 @@
         },
         "php": {
           "type": "string",
-          "description": "The PHP version for the app.",
+          "description": "The PHP version for the app. This should be specified as a major.minor version number (e.g. '7.4' or '8.2'). For LAMP/LEMP based recipes, this determines the PHP version installed in the appserver container.",
           "examples": [
             "7.3",
             "8.2"
@@ -63,11 +63,17 @@
         },
         "database": {
           "type": "string",
-          "description": "The database type and version for the app.",
+          "description": "The database type and version for the app. Specify as type:version where type is the database type such as 'mysql' or 'mariadb'.",
           "examples": [
             "mariadb:10.2",
             "mysql:8.0"
           ]
+        },
+        "composer": {
+          "$ref": "#/$defs/plugins/php/config/composer"
+        },
+        "composer_version": {
+          "$ref": "#/$defs/plugins/php/config/composer_version"
         },
         "xdebug": {
           "$ref": "#/$defs/plugins/php/config/xdebug"
@@ -98,7 +104,7 @@
     },
     "excludes": {
       "type": "array",
-      "description": "List of directories to exclude from syncing to the Lando services.",
+      "description": "List of directories to exclude from syncing to the Lando services. This is a performance optimization feature that prevents large directories like vendor and node_modules from being synced between host and container filesystems, which can significantly improve startup time and reduce disk I/O. Use ! prefix to negate an exclusion pattern.",
       "items": {
         "type": "string"
       },
@@ -115,7 +121,7 @@
     },
     "services": {
       "type": "object",
-      "description": "Lando service definitions.",
+      "description": "Define custom services for your Lando app. Each service runs in its own container and can be configured with specific options like type, build commands, ports, and more. Service names must be unique and can contain letters, numbers, dots, and hyphens. Common services include web servers, databases, caching layers, and build tools.",
       "patternProperties": {
         "^[a-zA-Z0-9._-]+$": {
           "$ref": "#/$defs/lando/service"
@@ -147,14 +153,14 @@
     },
     "tooling": {
       "type": "object",
-      "description": "Tooling definitions for the Lando project.",
+      "description": "Define custom CLI commands that can be run via 'lando <command>'. Each command can run in one or more services and can execute shell commands, scripts, or other tools. Commands can be configured with options like service target, description, and user context. Common uses include running package managers (composer, npm), build tools (webpack, gulp), testing frameworks (phpunit, jest), and database operations (mysql, drush). Commands can be chained together and run in parallel or sequence.",
       "patternProperties": {
         "^[a-zA-Z0-9_-]+$": {
-          "description": "The tooling command to be added to the Lando CLI.",
+          "description": "The command name that will be added to the Lando CLI. This becomes available as 'lando <command>'.",
           "oneOf": [
             {
               "type": "string",
-              "description": "Prevent the tool from being loaded.",
+              "description": "Set to 'disabled' to prevent this command from being loaded. Useful for temporarily disabling commands or overriding recipe defaults.",
               "enum": [
                 "disabled"
               ],
@@ -234,7 +240,7 @@
     "lando": {
       "service": {
         "type": "object",
-        "description": "The name of the service.",
+        "description": "Configuration for a Lando service. Services are the core building blocks of a Lando app, representing containers that provide functionality like web servers, databases, caching, etc. Each service can be customized with build steps, runtime configuration, port mapping, and plugin-specific settings.",
         "properties": {
           "type": {
             "type": "string",
@@ -375,6 +381,12 @@
           "hogfrom": {
             "$ref": "#/$defs/plugins/mailhog/config/hogfrom"
           },
+          "composer": {
+            "$ref": "#/$defs/plugins/php/config/composer"
+          },
+          "composer_version": {
+            "$ref": "#/$defs/plugins/php/config/composer_version"
+          },
           "xdebug": {
             "$ref": "#/$defs/plugins/php/config/xdebug"
           },
@@ -432,8 +444,22 @@
           },
           {
             "if": {
-              "required": [
-                "xdebug"
+              "anyOf": [
+                {
+                  "required": [
+                    "xdebug"
+                  ]
+                },
+                {
+                  "required": [
+                    "composer"
+                  ]
+                },
+                {
+                  "required": [
+                    "composer_version"
+                  ]
+                }
               ]
             },
             "then": {
@@ -842,16 +868,65 @@
               "type": "string"
             },
             "examples": [
-              ["appserver"]
+              [
+                "appserver"
+              ]
             ]
           }
         }
       },
       "php": {
         "config": {
+          "composer": {
+            "type": "object",
+            "description": "Global composer dependencies to install. This follows composer.json syntax but in YAML format.",
+            "patternProperties": {
+              "^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$": {
+                "type": "string",
+                "description": "Version constraint for the package.",
+                "examples": [
+                  "^6.5",
+                  "~2.0"
+                ]
+              }
+            },
+            "examples": {
+              "phpunit/phpunit": "^6.5"
+            },
+            "additionalProperties": false
+          },
+          "composer_version": {
+            "description": "The version of Composer to install. Can be a specific version number or release channel alias.",
+            "oneOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "2.6.5",
+                  "1",
+                  "1-latest",
+                  "2",
+                  "2-latest",
+                  "2.2",
+                  "2.2-latest",
+                  "preview",
+                  "snapshot"
+                ]
+              },
+              {
+                "type": "boolean",
+                "enum": [
+                  false
+                ],
+                "description": "Disable Composer installation"
+              }
+            ]
+          },
           "xdebug": {
             "description": "Xdebug configuration for the app. This can be a boolean or a string of modes to enable.",
-            "type": ["boolean", "string"],
+            "type": [
+              "boolean",
+              "string"
+            ],
             "oneOf": [
               {
                 "type": "boolean"
