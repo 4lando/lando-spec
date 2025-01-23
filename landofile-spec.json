@@ -514,15 +514,13 @@
               },
               {
                 "type": "array",
+                "description": "The command(s) to run for the tool.",
                 "items": {
                   "type": "string"
                 }
               }
             ],
             "description": "The command(s) to run for the tool.",
-            "items": {
-              "type": "string"
-            },
             "examples": [
               "npm install",
               [
@@ -741,8 +739,7 @@
               "bitnami/mariadb:10.2",
               "node:14",
               "google/cloud-sdk:latest"
-            ],
-            "additionalProperties": false
+            ]
           },
           "command": {
             "$comment": "",
@@ -890,9 +887,11 @@
                 ]
               }
             },
-            "examples": {
-              "phpunit/phpunit": "^6.5"
-            },
+            "examples": [
+              {
+                "phpunit/phpunit": "^6.5"
+              }
+            ],
             "additionalProperties": false
           },
           "composer_version": {
