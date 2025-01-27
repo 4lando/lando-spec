@@ -334,6 +334,36 @@
             "type": "boolean",
             "description": "Expose SSL for the service."
           },
+          "portforward": {
+            "description": "Forwards a port to the host OS. Use `true` to allow Docker to manage ports (recommended). You may also specify a port number, but there is risk of conflicting with other services or applications.",
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "examples": [
+              true,
+              3000
+            ]
+          },
+          "portforward": {
+            "description": "Forwards a port to the host OS. Use `true` to allow Docker to manage ports (recommended). You may also specify a port number, but there is risk of conflicting with other services or applications.",
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "examples": [
+              true,
+              3000
+            ]
+          },
           "scanner": {
             "oneOf": [
               {
