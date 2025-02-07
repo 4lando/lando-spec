@@ -6,5 +6,7 @@ validating Lando's Landofile and configuration files.
 It is currently a work in progress but should properly validate most common
 Landofile configurations.
 
+See it demonstrated in the [Landofile editor] which uses this schema for its validation.
+
 Please create an issue or pull request for any missing or incomplete cases.
 
