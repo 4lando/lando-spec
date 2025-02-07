@@ -315,6 +315,21 @@
               ]
             ]
           },
+          "ports": {
+            "type": "array",
+            "description": "Deprecated. Define ports under `overrides` or `services` instead.",
+            "deprecated": true,
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
           "ssl": {
             "oneOf": [
               {
