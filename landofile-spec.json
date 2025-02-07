@@ -244,14 +244,25 @@
         "properties": {
           "type": {
             "type": "string",
-            "description": "The type of service.",
+            "description": "The Lando service type in the format 'string:version'.",
+            "oneOf": [
+              {
+                "const": "lando"
+              },
+              {
+                "pattern": "^[a-zA-Z0-9_-]+:[0-9]+(\\.[0-9]+)*$",
+              }
+            ],
+            "not": {
+              "pattern": "^[a-zA-Z0-9_-]+$",
+              "description": "Specifying a service type without a version is deprecated. Please include the version."
+            },
             "examples": [
-              "node",
-              "php:7.4",
-              "nginx",
-              "apache",
-              "mysql:5.7",
-              "compose",
+              "node:22",
+              "php:8.4",
+              "nginx:1.27",
+              "apache:2.4",
+              "mysql:8.0",
               "lando"
             ],
             "pattern": "^[a-zA-Z0-9._-]+(:[a-zA-Z0-9._-]+)?$"
@@ -348,21 +359,6 @@
           "sslExpose": {
             "type": "boolean",
             "description": "Expose SSL for the service."
-          },
-          "portforward": {
-            "description": "Forwards a port to the host OS. Use `true` to allow Docker to manage ports (recommended). You may also specify a port number, but there is risk of conflicting with other services or applications.",
-            "oneOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "number"
-              }
-            ],
-            "examples": [
-              true,
-              3000
-            ]
           },
           "portforward": {
             "description": "Forwards a port to the host OS. Use `true` to allow Docker to manage ports (recommended). You may also specify a port number, but there is risk of conflicting with other services or applications.",
