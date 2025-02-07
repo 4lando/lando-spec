@@ -244,19 +244,25 @@
         "properties": {
           "type": {
             "type": "string",
-            "description": "The Lando service type in the format 'string:version'.",
+            "description": "The Lando service type.",
             "oneOf": [
               {
                 "const": "lando"
               },
               {
-                "pattern": "^[a-zA-Z0-9_-]+:[0-9]+(\\.[0-9]+)*$"
+                "allOf": [
+                  {
+                    "pattern": "^[a-zA-Z0-9_-]+:[0-9]+(\\.[0-9]+)*$"
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[a-zA-Z0-9_-]+$",
+                      "description": "Specifying a service type without a version is deprecated. Please include the version in the format `name:version`."
+                    }
+                  }
+                ]
               }
             ],
-            "not": {
-              "pattern": "^[a-zA-Z0-9_-]+$",
-              "description": "Specifying a service type without a version is deprecated. Please include the version."
-            },
             "examples": [
               "node:22",
               "php:8.4",
