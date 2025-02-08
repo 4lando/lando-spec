@@ -3,22 +3,23 @@
   "$id": "landofile-spec.json",
   "title": "Landofile",
   "type": "object",
-  "description": "The configuration file for Lando apps.",
+  "description": "The configuration file for a Lando app.",
   "properties": {
     "name": {
       "type": "string",
-      "description": "The name of the Lando app. Must start with a lowercase letter or number and can only contain lowercase letters, numbers, hyphens and underscores. This name will be used as the project name in Docker Compose and should be unique across all Lando apps on your system.",
+      "description": "The name of the Lando app. This is used as the project name in Docker Compose and should be unique across all Lando apps on your system.",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "$comment": "Must start with a lowercase letter or number and can only contain lowercase letters, numbers, hyphens and underscores.",
       "examples": [
         "mysite",
         "example-web-app",
         "867-5309"
-      ],
-      "pattern": "^[a-z0-9][a-z0-9_-]*$",
-      "minLength": 1
+      ]
     },
     "recipe": {
       "type": "string",
-      "description": "The recipe used for the Lando app. Recipes are pre-configured combinations of services and tooling that provide a complete development environment for common use cases. For example, the 'lamp' recipe provides Apache, MySQL and PHP, while 'drupal10' provides everything needed for Drupal 10 development including Drush.",
+      "description": "The recipe type used for the app. Recipes are pre-configured combinations of services and tooling that provide a complete development environment for common use cases. For example, the 'lamp' recipe provides Apache, MySQL and PHP, while 'drupal10' provides everything needed for Drupal 10 development including Drush.",
       "examples": [
         "lamp",
         "drupal10",
@@ -36,10 +37,19 @@
           "type": "string",
           "description": "The web server type and version for serving the application. Can be apache, nginx, or cli. Optionally specify a version number after a colon (e.g. nginx:1.25). Apache is the default if not specified. The cli option runs PHP directly without a web server.",
           "default": "apache",
-          "pattern": "^(apache|nginx|cli)(?::[0-9]+(?:\\.[0-9]+)*)?$",
+          "oneOf": [
+            {
+              "const": "cli"
+            },
+            {
+              "pattern": "^(apache|nginx)(:[0-9]+(?:\\.[0-9]+)*)?$",
+              "$comment": "Must be either apache or nginx and optionally specify a version number."
+            }
+          ],
           "examples": [
             "apache",
             "nginx",
+            "cli",
             "nginx:1.25"
           ]
         },
@@ -244,23 +254,23 @@
         "properties": {
           "type": {
             "type": "string",
-            "description": "The Lando service type.",
-            "oneOf": [
+            "description": "The Lando service type to use for this service.",
+            "anyOf": [
               {
                 "const": "lando"
               },
               {
-                "allOf": [
-                  {
-                    "pattern": "^[a-zA-Z0-9_-]+:[0-9]+(\\.[0-9]+)*$"
-                  },
-                  {
-                    "not": {
-                      "pattern": "^[a-zA-Z0-9_-]+$",
-                      "description": "Specifying a service type without a version is deprecated. Please include the version in the format `name:version`."
-                    }
-                  }
-                ]
+                "const": "compose",
+                "deprecated": "Please use the `lando` service type instead."
+              },
+              {
+                "pattern": "^(?!.*:)(?!^(lando|compose)$)[a-zA-Z0-9_-]+$",
+                "$comment": "Service type without version (e.g., `node`, `php`)",
+                "deprecated": "Specifying a service type without a version is deprecated. Please include the version in the format `name:version`."
+              },
+              {
+                "pattern": "^[a-zA-Z0-9_-]+:[0-9]+(\\.[0-9]+)*$",
+                "$comment": "Service type with version (e.g., `node:20`, `php:8.2`)"
               }
             ],
             "examples": [
@@ -270,8 +280,7 @@
               "apache:2.4",
               "mysql:8.0",
               "lando"
-            ],
-            "pattern": "^[a-zA-Z0-9._-]+(:[a-zA-Z0-9._-]+)?$"
+            ]
           },
           "api": {
             "type": "number",
